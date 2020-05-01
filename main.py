@@ -1,6 +1,8 @@
 import requests 
 import redis 
 from bs4 import BeautifulSoup 
+from secrets import password
+import datetime
 
 class Scrapper :
     def __init__(self, keywords):
@@ -33,8 +35,8 @@ class Scrapper :
 
         # me == my email address
         # you == recipient's email address
-        me = "newfeeder@gmail.com"
-        you = "xavewox292@tgres24.com"
+        fromEmail = "newfeeder@gmail.com"
+        toEmail = "xavewox292@tgres24.com"
 
         # Create message container - the correct MIME type is multipart/alternative.
         msg = MIMEMultipart('alternative')
@@ -60,10 +62,24 @@ class Scrapper :
         # According to RFC 2046, the last part of a multipart message, in this case
         # the HTML message, is best and preferred.
         msg.attach(mime)
+
+        try:
+            mail = smtplib.SMTP('smtp.gmail.com', 587)
+            mail.ehlo()
+            mail.starttls()
+            mail.login(fromEmail, password)
+            mail.sendmail(fromEmail, toEmail, msg.as_string())
+            mail.quit()
+            print('Email sent!')
         
-
-
+        except Exception as e:
+            print('Something went wrong... %s' % e)
 
         r.flushdb()
 
 s = Scrapper(['Jukebox'])
+s = Scraper(['database'])
+s.parse()
+s.store()
+if datetime.datetime.now().hour == 13:
+    s.email()
