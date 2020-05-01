@@ -24,6 +24,46 @@ class Scrapper :
     def email(self):
         r = redis.Redis(host='localhost', port=6379, db=0)
         links = [r.get(k) for k in r.keys()]
-        print(links)
+
+        #Email
+        import smtplib
+
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+
+        # me == my email address
+        # you == recipient's email address
+        me = "newfeeder@gmail.com"
+        you = "xavewox292@tgres24.com"
+
+        # Create message container - the correct MIME type is multipart/alternative.
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = "Link"
+        msg['From'] = fromEmail 
+        msg['To'] = toEmail
+
+        # Create the body of the message (a plain-text and an HTML version).
+        html = """\
+        <html>
+        <head></head>
+        <body>
+            <h4> %s Links You May Find Interesting Today: </h4>
+                %s       
+        </body>
+        </html>
+        """ %(len(links), '<br/><br/>'.join(links))
+
+        # Record the MIME types of both parts - text/plain and text/html.
+        mime = MIMEText(html, 'html')
+            
+        # Attach parts into message container.
+        # According to RFC 2046, the last part of a multipart message, in this case
+        # the HTML message, is best and preferred.
+        msg.attach(mime)
+        
+
+
+
+        r.flushdb()
 
 s = Scrapper(['Jukebox'])
